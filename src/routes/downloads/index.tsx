@@ -30,6 +30,13 @@ type LicenseMetadata = {
   created_at: string
 }
 
+const releases = {
+  windows: "SIFARH-windows-portable.zip",
+  linux: "SIFARH-linux-portable.zip",
+} as const
+
+type Platform = keyof typeof releases
+
 export const Route = createFileRoute("/downloads/")({
   component: DownloadsPage,
 })
@@ -42,7 +49,8 @@ function DownloadsPage() {
   const [licenses, setLicenses] = useState<LicenseMetadata[]>([])
   const [isLoadingPurchases, setIsLoadingPurchases] = useState(false)
   const [licenseKey, setLicenseKey] = useState<string | null>(null)
-  const [isDownloading, setIsDownloading] = useState(false)
+  const [downloadingPlatform, setDownloadingPlatform] =
+    useState<Platform | null>(null)
 
   const activeLicense = licenses.find(
     (license) =>
@@ -170,14 +178,14 @@ function DownloadsPage() {
     }
   }
 
-  async function handleDownload() {
+  async function handleDownload(platform: Platform) {
     setErrorMessage(null)
-    setIsDownloading(true)
+    setDownloadingPlatform(platform)
 
     try {
       const { data, error } = await getSupabaseClient()
         .storage.from("sifarh-downloads")
-        .createSignedUrl("SIFARH.zip", 60, { download: true })
+        .createSignedUrl(releases[platform], 60, { download: true })
       if (error) throw error
       window.location.href = data.signedUrl
     } catch (error) {
@@ -187,7 +195,7 @@ function DownloadsPage() {
           : "No se pudo iniciar la descarga."
       )
     } finally {
-      setIsDownloading(false)
+      setDownloadingPlatform(null)
     }
   }
 
@@ -322,17 +330,29 @@ function DownloadsPage() {
                       </h2>
                       <p className="mt-1 text-sm leading-6 text-slate-600">
                         {activeLicense
-                          ? "Descarga el instalador de SIFARH (archivo .zip)."
+                          ? "Descarga la versión portable para tu sistema operativo (archivo .zip)."
                           : "La descarga se habilita cuando tienes una compra con licencia activa."}
                       </p>
                     </div>
                     <Button
                       type="button"
-                      disabled={!activeLicense || isDownloading}
+                      disabled={!activeLicense || downloadingPlatform !== null}
                       className="w-full"
-                      onClick={handleDownload}
+                      onClick={() => handleDownload("windows")}
                     >
-                      {isDownloading ? "Preparando descarga..." : "Descargar"}
+                      {downloadingPlatform === "windows"
+                        ? "Preparando descarga..."
+                        : "Descargar para Windows"}
+                    </Button>
+                    <Button
+                      type="button"
+                      disabled={!activeLicense || downloadingPlatform !== null}
+                      className="w-full"
+                      onClick={() => handleDownload("linux")}
+                    >
+                      {downloadingPlatform === "linux"
+                        ? "Preparando descarga..."
+                        : "Descargar para Linux"}
                     </Button>
                   </div>
                   <div className="space-y-3 rounded-xl border border-slate-200 bg-slate-50/60 p-4">
