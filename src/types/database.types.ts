@@ -141,6 +141,10 @@ export type Database = {
         Args: { p_purchase_id: string }
         Returns: string | null
       }
+      record_pixelpay_sandbox_purchase: {
+        Args: { p_user_id: string; p_payment_id: string }
+        Returns: string
+      }
     }
     Enums: Record<string, never>
     CompositeTypes: Record<string, never>

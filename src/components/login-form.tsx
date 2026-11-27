@@ -21,8 +21,9 @@ import { getSupabaseClient } from "@/utils/supabase"
 
 export function LoginForm({
   className,
+  returnToShopping = false,
   ...props
-}: React.ComponentProps<"div">) {
+}: React.ComponentProps<"div"> & { returnToShopping?: boolean }) {
   const navigate = useNavigate()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -45,7 +46,7 @@ export function LoginForm({
         return
       }
 
-      await navigate({ to: "/downloads" })
+      await navigate({ to: returnToShopping ? "/shopping" : "/downloads" })
     } catch (error) {
       setErrorMessage(
         error instanceof Error
@@ -69,7 +70,7 @@ export function LoginForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit}>
+          <form method="post" onSubmit={handleSubmit}>
             <FieldGroup>
               {errorMessage && (
                 <p className="text-sm text-destructive" role="alert">

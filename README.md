@@ -7,11 +7,11 @@ El programa se mantiene en un repositorio independiente: [SIFARH-PSA2-main](http
 ## Funcionalidades
 
 - Registro e inicio de sesión con Supabase Auth.
-- Obtención gratuita de SIFARH y generación de una clave de activación.
-- Historial de compras y consulta de la clave desde la cuenta.
+- Simulación local de compra con PixelPay Sandbox y generación de una clave de activación.
+- Historial de compras y consulta individual de las claves de activación desde la cuenta.
 - Descargas privadas para Windows y Linux mediante enlaces temporales, disponibles para usuarios con una compra pagada y licencia activa.
 
-Actualmente el producto es gratuito; no hay pasarela de pago integrada. La integración con PayPal queda pendiente.
+La compra disponible es una simulación local con PixelPay Sandbox; los pagos reales todavía no están habilitados.
 
 ## Tecnologías
 
@@ -56,6 +56,30 @@ Actualmente el producto es gratuito; no hay pasarela de pago integrada. La integ
 
    Abre [http://localhost:3000](http://localhost:3000).
 
+### Simulación de pago con PixelPay
+
+En `.env`, agrega `SUPABASE_SECRET_KEY` con una clave secreta del proyecto y
+`PIXELPAY_SANDBOX_USER_ID` con el UUID de la única cuenta autorizada para las
+pruebas. La clave secreta se utiliza exclusivamente en el servidor local; nunca
+la publiques ni la incluyas en variables accesibles desde el navegador.
+Aplica la migración de PixelPay antes de probar y reinicia el servidor de desarrollo.
+
+Abre `/shopping`, selecciona **Ir al pago de prueba** e inicia sesión con la
+cuenta autorizada antes de abrir el formulario. Después, vuelve a seleccionar
+**Ir al pago de prueba** e introduce los datos indicados. La transacción
+se envía únicamente al confirmar. Solo se aceptan esos datos públicos: nunca
+introduzcas una tarjeta real. El escenario exitoso del sandbox es de 1 USD y
+no hay cobro real. El proveedor usa el importe como selector de escenario,
+por lo que 50 USD no está disponible en este flujo. Una respuesta aprobada crea
+una compra identificada como `pixelpay_sandbox` y una licencia activa en el
+proyecto Supabase configurado; ambas tienen efectos reales en esa base de datos.
+La compra gratuita está deshabilitada.
+
+La simulación solo está disponible con el servidor de desarrollo en localhost;
+no expongas ese servidor a la red. No habilita pagos de producción. Utiliza
+preferiblemente un proyecto Supabase de pruebas y elimina las compras y
+licencias de prueba cuando ya no las necesites.
+
 ## Configuración de Supabase
 
 Para un proyecto nuevo, aplica las migraciones de [`supabase/migrations`](supabase/migrations) en orden cronológico. Estas crean los productos, compras, licencias, políticas de acceso, funciones de compra y verificación, el secreto de cifrado en Vault y el bucket privado `sifarh-downloads`.
@@ -76,10 +100,10 @@ Para permitir el registro sin confirmar el correo, desactiva **Confirm email** e
 | Ruta | Descripción |
 | --- | --- |
 | `/` | Página principal. |
-| `/shopping` | Información del producto y obtención gratuita. |
+| `/shopping` | Información del producto y compra de prueba local. |
 | `/signup` | Registro de usuario. |
 | `/login` | Inicio de sesión. |
-| `/downloads` | Compras, clave de activación y descargas. |
+| `/downloads` | Compras, claves de activación y descargas. |
 
 ## Comandos
 
